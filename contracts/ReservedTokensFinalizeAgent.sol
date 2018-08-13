@@ -16,7 +16,7 @@ contract ReservedTokensFinalizeAgent is FinalizeAgent {
 
   uint public distributedReservedTokensDestinationsLen = 0;
 
-  function ReservedTokensFinalizeAgent(CrowdsaleTokenExt _token, CrowdsaleExt _crowdsale) public {
+  constructor(CrowdsaleTokenExt _token, CrowdsaleExt _crowdsale) public {
     token = _token;
     crowdsale = _crowdsale;
   }

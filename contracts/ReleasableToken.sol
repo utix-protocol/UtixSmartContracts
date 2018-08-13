@@ -32,7 +32,7 @@ contract ReleasableToken is ERC20, Ownable {
 
     if(!released) {
         if(!transferAgents[_sender]) {
-            throw;
+            revert();
         }
     }
 
@@ -69,7 +69,7 @@ contract ReleasableToken is ERC20, Ownable {
   /** The function can be called only before or after the tokens have been releasesd */
   modifier inReleaseState(bool releaseState) {
     if(releaseState != released) {
-        throw;
+        revert();
     }
     _;
   }
@@ -77,17 +77,17 @@ contract ReleasableToken is ERC20, Ownable {
   /** The function can be called only by a whitelisted release agent. */
   modifier onlyReleaseAgent() {
     if(msg.sender != releaseAgent) {
-        throw;
+        revert();
     }
     _;
   }
 
-  function transfer(address _to, uint _value) canTransfer(msg.sender) returns (bool success) {
+  function transfer(address _to, uint _value) canTransfer(msg.sender) public returns (bool success) {
     // Call StandardToken.transfer()
    return super.transfer(_to, _value);
   }
 
-  function transferFrom(address _from, address _to, uint _value) canTransfer(_from) returns (bool success) {
+  function transferFrom(address _from, address _to, uint _value) canTransfer(_from) public returns (bool success) {
     // Call StandardToken.transferForm()
     return super.transferFrom(_from, _to, _value);
   }

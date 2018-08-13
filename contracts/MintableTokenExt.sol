@@ -51,14 +51,14 @@ contract MintableTokenExt is StandardToken, Ownable {
   modifier onlyMintAgent() {
     // Only crowdsale contracts are allowed to mint new tokens
     if(!mintAgents[msg.sender]) {
-        throw;
+        revert();
     }
     _;
   }
 
   /** Make sure we are not done yet. */
   modifier canMint() {
-    if(mintingFinished) throw;
+    if(mintingFinished) revert();
     _;
   }
 
@@ -116,7 +116,7 @@ contract MintableTokenExt is StandardToken, Ownable {
 
     // This will make the mint transaction apper in EtherScan.io
     // We can remove this after there is a standardized minting event
-    Transfer(0, receiver, amount);
+    emit Transfer(0, receiver, amount);
   }
 
   /**
@@ -124,7 +124,7 @@ contract MintableTokenExt is StandardToken, Ownable {
    */
   function setMintAgent(address addr, bool state) onlyOwner canMint public {
     mintAgents[addr] = state;
-    MintingAgentChanged(addr, state);
+    emit MintingAgentChanged(addr, state);
   }
 
   function setReservedTokensList(address addr, uint inTokens, uint inPercentageUnit, uint inPercentageDecimals) private canMint onlyOwner {

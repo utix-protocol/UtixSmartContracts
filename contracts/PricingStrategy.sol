@@ -14,7 +14,7 @@ contract PricingStrategy {
   address public tier;
 
   /** Interface declaration. */
-  function isPricingStrategy() public constant returns (bool) {
+  function isPricingStrategy() public pure returns (bool) {
     return true;
   }
 
@@ -22,16 +22,15 @@ contract PricingStrategy {
    *
    * Checks that pricing strategy matches crowdsale parameters.
    */
-  function isSane(address crowdsale) public constant returns (bool) {
+  function isSane() public pure returns (bool) {
     return true;
   }
 
   /**
-   * @dev Pricing tells if this is a presale purchase or not.
-     @param purchaser Address of the purchaser
+   * @dev Pricing tells if this is a presale purchase or not.  
      @return False by default, true if a presale purchaser
    */
-  function isPresalePurchase(address purchaser) public constant returns (bool) {
+  function isPresalePurchase() public pure returns (bool) {
     return false;
   }
 
@@ -44,12 +43,10 @@ contract PricingStrategy {
    *
    * @param value - What is the value of the transaction send in as wei
    * @param tokensSold - how much tokens have been sold this far
-   * @param weiRaised - how much money has been raised this far in the main token sale - this number excludes presale
-   * @param msgSender - who is the investor of this transaction
    * @param decimals - how many decimal units the token has
    * @return Amount of tokens the investor receives
    */
-  function calculatePrice(uint value, uint weiRaised, uint tokensSold, address msgSender, uint decimals) public constant returns (uint tokenAmount);
+  function calculatePrice(uint value,  uint tokensSold,  uint decimals) public constant returns (uint tokenAmount);
 
   function oneTokenInWei(uint tokensSold, uint decimals) public constant returns (uint);
 }

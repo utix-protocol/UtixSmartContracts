@@ -14,7 +14,7 @@ contract Allocatable is Ownable {
    */
   function setAllocateAgent(address addr, bool state) onlyOwner public {
     allocateAgents[addr] = state;
-    AllocateAgentChanged(addr, state);
+    emit AllocateAgentChanged(addr, state);
   }
 
   modifier onlyAllocateAgent() {

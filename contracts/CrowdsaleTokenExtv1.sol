@@ -38,7 +38,7 @@ contract CrowdsaleTokenExtv1 is CrowdsaleTokenExt {
    * @param _decimals Number of decimal places
    * @param _mintable Are new tokens created over the crowdsale or do we distribute only the initial supply? Note that when the token becomes transferable the minting always ends.
    */
-  function CrowdsaleTokenExtv1(string _name, string _symbol, uint _initialSupply, uint _decimals, bool _mintable, uint _globalMinCap, address _oldTokenAddress, uint _originalSupply)
+  constructor(string _name, string _symbol, uint _initialSupply, uint _decimals, bool _mintable, uint _globalMinCap, address _oldTokenAddress, uint _originalSupply) public
     CrowdsaleTokenExt(_name, _symbol, _initialSupply, _decimals, _mintable, _globalMinCap) {
     
     originalSupply = _originalSupply;

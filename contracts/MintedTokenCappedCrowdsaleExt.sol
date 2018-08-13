@@ -21,7 +21,7 @@ contract MintedTokenCappedCrowdsaleExt is CrowdsaleExt {
   /* Maximum amount of tokens this crowdsale can sell. */
   uint public maximumSellableTokens;
 
-  function MintedTokenCappedCrowdsaleExt(
+  constructor(
     string _name, 
     address _token, 
     PricingStrategy _pricingStrategy, 
@@ -32,7 +32,7 @@ contract MintedTokenCappedCrowdsaleExt is CrowdsaleExt {
     bool _isUpdatable, 
     bool _isWhiteListed,
     address _tokenVestingAddress
-  ) CrowdsaleExt(_name, _token, _pricingStrategy, _multisigWallet, _start, _end, _minimumFundingGoal, _isUpdatable, _isWhiteListed, _tokenVestingAddress) {
+  ) public CrowdsaleExt(_name, _token, _pricingStrategy, _multisigWallet, _start, _end, _minimumFundingGoal, _isUpdatable, _isWhiteListed, _tokenVestingAddress) {
     maximumSellableTokens = _maximumSellableTokens;
   }
 
@@ -42,7 +42,7 @@ contract MintedTokenCappedCrowdsaleExt is CrowdsaleExt {
   /**
    * Called from invest() to confirm if the curret investment does not break our cap rule.
    */
-  function isBreakingCap(uint weiAmount, uint tokenAmount, uint weiRaisedTotal, uint tokensSoldTotal) public constant returns (bool limitBroken) {
+  function isBreakingCap(uint tokensSoldTotal) public constant returns (bool limitBroken) {
     return tokensSoldTotal > maximumSellableTokens;
   }
 
@@ -65,7 +65,7 @@ contract MintedTokenCappedCrowdsaleExt is CrowdsaleExt {
     assert(!lastTierCntrct.finalized());
 
     maximumSellableTokens = tokens;
-    MaximumSellableTokensChanged(maximumSellableTokens);
+    emit MaximumSellableTokensChanged(maximumSellableTokens);
   }
 
   function updateRate(uint oneTokenInCents) public onlyOwner {

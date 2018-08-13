@@ -12,10 +12,10 @@ contract Registry is Ownable {
 
   function add(address deployAddress) public {
     deployedContracts[msg.sender].push(deployAddress);
-    Added(msg.sender, deployAddress);
+    emit Added(msg.sender, deployAddress);
   }
 
-  function count(address deployer) constant returns (uint) {
+  function count(address deployer) public constant returns (uint) {
     return deployedContracts[deployer].length;
   }
 }

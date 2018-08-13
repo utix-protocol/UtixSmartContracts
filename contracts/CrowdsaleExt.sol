@@ -134,7 +134,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
   // Crowdsale end time has been changed
   event EndsAtChanged(uint newEndsAt);
 
-  function CrowdsaleExt(string _name, address _token, PricingStrategy _pricingStrategy, address _multisigWallet, uint _start, uint _end, uint _minimumFundingGoal, bool _isUpdatable, bool _isWhiteListed, address _tokenVestingAddress) {
+  constructor(string _name, address _token, PricingStrategy _pricingStrategy, address _multisigWallet, uint _start, uint _end, uint _minimumFundingGoal, bool _isUpdatable, bool _isWhiteListed, address _tokenVestingAddress) public {
 
     owner = msg.sender;
 
@@ -148,24 +148,24 @@ contract CrowdsaleExt is Allocatable, Haltable {
 
     multisigWallet = _multisigWallet;
     if(multisigWallet == 0) {
-        throw;
+        revert();
     }
 
     if(_start == 0) {
-        throw;
+        revert();
     }
 
     startsAt = _start;
 
     if(_end == 0) {
-        throw;
+        revert();
     }
 
     endsAt = _end;
 
     // Don't mess the dates
     if(startsAt >= endsAt) {
-        throw;
+        revert();
     }
 
     // Minimum funding goal can be zero
@@ -179,7 +179,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
   /**
    * Don't expect to just send in money and get tokens.
    */
-  function() payable {
+  function() external payable {
     buy();
   }
 
@@ -198,45 +198,45 @@ contract CrowdsaleExt is Allocatable, Haltable {
     // Determine if it's a good time to accept investment from this participant
     if(getState() == State.PreFunding) {
       // Are we whitelisted for early deposit
-      throw;
+      revert();
     } else if(getState() == State.Funding) {
       // Retail participants can only come in when the crowdsale is running
       // pass
       if(isWhiteListed) {
         if(!earlyParticipantWhitelist[receiver].status) {
-          throw;
+          revert();
         }
       }
     } else {
       // Unwanted state
-      throw;
+      revert();
     }
 
     uint weiAmount = msg.value;
 
     // Account presale sales separately, so that they do not count against pricing tranches
-    uint tokenAmount = pricingStrategy.calculatePrice(weiAmount, weiRaised, tokensSold, msg.sender, token.decimals());
+    uint tokenAmount = pricingStrategy.calculatePrice(weiAmount,  tokensSold, token.decimals());
 
     if(tokenAmount == 0) {
       // Dust transaction
-      throw;
+      revert();
     }
 
     if(isWhiteListed) {
       if(weiAmount < earlyParticipantWhitelist[receiver].minCap && tokenAmountOf[receiver] == 0) {
         // weiAmount < minCap for investor
-        throw;
+        revert();
       }
 
       // Check that we did not bust the investor's cap
       if (isBreakingInvestorCap(receiver, weiAmount)) {
-        throw;
+        revert();
       }
 
       updateInheritedEarlyParticipantWhitelist(receiver, weiAmount);
     } else {
       if(weiAmount < token.minCap() && tokenAmountOf[receiver] == 0) {
-        throw;
+        revert();
       }
     }
 
@@ -254,17 +254,17 @@ contract CrowdsaleExt is Allocatable, Haltable {
     tokensSold = tokensSold.plus(tokenAmount);
 
     // Check that we did not bust the cap
-    if(isBreakingCap(weiAmount, tokenAmount, weiRaised, tokensSold)) {
-      throw;
+    if(isBreakingCap(tokensSold)) {
+      revert();
     }
 
     assignTokens(receiver, tokenAmount);
 
     // Pocket the money
-    if(!multisigWallet.send(weiAmount)) throw;
+    if(!multisigWallet.send(weiAmount)) revert();
 
     // Tell us invest was success
-    Invested(receiver, weiAmount, tokenAmount, customerId);
+    emit Invested(receiver, weiAmount, tokenAmount, customerId);
   }
 
 
@@ -311,7 +311,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
     }
 
     // Tell us invest was success
-    Invested(receiver, weiAmount, tokenAmount, customerId);
+    emit Invested(receiver, weiAmount, tokenAmount, customerId);
   }
 
   /**
@@ -333,7 +333,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
   function distributeReservedTokens(uint reservedTokensDistributionBatch) public inState(State.Success) onlyOwner stopInEmergency {
     // Already finalized
     if(finalized) {
-      throw;
+      revert();
     }
 
     // Finalizing is optional. We only call it if we are given a finalizing agent.
@@ -361,7 +361,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
 
     // Already finalized
     if(finalized) {
-      throw;
+      revert();
     }
 
     // Finalizing is optional. We only call it if we are given a finalizing agent.
@@ -384,7 +384,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
 
     // Don't allow setting bad agent
     if(!finalizeAgent.isFinalizeAgent()) {
-      throw;
+      revert();
     }
   }
 
@@ -392,7 +392,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
    * Allow addresses to do early participation.
    */
   function setEarlyParticipantWhitelist(address addr, bool status, uint minCap, uint maxCap) public onlyOwner {
-    if (!isWhiteListed) throw;
+    if (!isWhiteListed) revert();
     assert(addr != address(0));
     assert(maxCap > 0);
     assert(minCap <= maxCap);
@@ -400,16 +400,16 @@ contract CrowdsaleExt is Allocatable, Haltable {
 
     if (!isAddressWhitelisted(addr)) {
       whitelistedParticipants.push(addr);
-      Whitelisted(addr, status, minCap, maxCap);
+      emit Whitelisted(addr, status, minCap, maxCap);
     } else {
-      WhitelistItemChanged(addr, status, minCap, maxCap);
+      emit WhitelistItemChanged(addr, status, minCap, maxCap);
     }
 
     earlyParticipantWhitelist[addr] = WhiteListData({status:status, minCap:minCap, maxCap:maxCap});
   }
 
   function setEarlyParticipantWhitelistMultiple(address[] addrs, bool[] statuses, uint[] minCaps, uint[] maxCaps) public onlyOwner {
-    if (!isWhiteListed) throw;
+    if (!isWhiteListed) revert();
     assert(now <= endsAt);
     assert(addrs.length == statuses.length);
     assert(statuses.length == minCaps.length);
@@ -420,8 +420,8 @@ contract CrowdsaleExt is Allocatable, Haltable {
   }
 
   function updateInheritedEarlyParticipantWhitelist(address reciever, uint weiAmount) private {
-    if (!isWhiteListed) throw;
-    if (weiAmount < earlyParticipantWhitelist[reciever].minCap && tokenAmountOf[reciever] == 0) throw;
+    if (!isWhiteListed) revert();
+    if (weiAmount < earlyParticipantWhitelist[reciever].minCap && tokenAmountOf[reciever] == 0) revert();
 
     uint8 tierPosition = getTierPosition(this);
 
@@ -432,11 +432,11 @@ contract CrowdsaleExt is Allocatable, Haltable {
   }
 
   function updateEarlyParticipantWhitelist(address addr, uint weiAmount) public {
-    if (!isWhiteListed) throw;
+    if (!isWhiteListed) revert();
     assert(addr != address(0));
     assert(now <= endsAt);
     assert(isTierJoined(msg.sender));
-    if (weiAmount < earlyParticipantWhitelist[addr].minCap && tokenAmountOf[addr] == 0) throw;
+    if (weiAmount < earlyParticipantWhitelist[addr].minCap && tokenAmountOf[addr] == 0) revert();
     //if (addr != msg.sender && contractAddr != msg.sender) throw;
     uint newMaxCap = earlyParticipantWhitelist[addr].maxCap;
     newMaxCap = newMaxCap.minus(weiAmount);
@@ -494,7 +494,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
     }
   }
 
-  function setStartsAt(uint time) onlyOwner {
+  function setStartsAt(uint time) public onlyOwner {
     assert(!finalized);
     assert(isUpdatable);
     assert(now <= time); // Don't change past
@@ -502,7 +502,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
     assert(now <= startsAt);
 
     CrowdsaleExt lastTierCntrct = CrowdsaleExt(getLastTier());
-    if (lastTierCntrct.finalized()) throw;
+    if (lastTierCntrct.finalized()) revert();
 
     uint8 tierPosition = getTierPosition(this);
 
@@ -513,7 +513,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
     }
 
     startsAt = time;
-    StartsAtChanged(startsAt);
+    emit StartsAtChanged(startsAt);
   }
 
   /**
@@ -534,7 +534,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
     assert(now <= endsAt);
 
     CrowdsaleExt lastTierCntrct = CrowdsaleExt(getLastTier());
-    if (lastTierCntrct.finalized()) throw;
+    if (lastTierCntrct.finalized()) revert();
 
 
     uint8 tierPosition = getTierPosition(this);
@@ -545,7 +545,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
     }
 
     endsAt = time;
-    EndsAtChanged(endsAt);
+    emit EndsAtChanged(endsAt);
   }
 
   /**
@@ -560,7 +560,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
 
     // Don't allow setting bad agent
     if(!pricingStrategy.isPricingStrategy()) {
-      throw;
+      revert();
     }
   }
 
@@ -575,7 +575,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
 
     // Change
     if(investorCount > MAX_INVESTMENTS_BEFORE_MULTISIG_CHANGE) {
-      throw;
+      revert();
     }
 
     multisigWallet = addr;
@@ -599,7 +599,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
    * Check if the contract relationship looks good.
    */
   function isPricingSane() public constant returns (bool sane) {
-    return pricingStrategy.isSane(address(this));
+    return pricingStrategy.isSane();
   }
 
   /**
@@ -611,7 +611,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
     if(finalized) return State.Finalized;
     else if (address(finalizeAgent) == 0) return State.Preparing;
     else if (!finalizeAgent.isSane()) return State.Preparing;
-    else if (!pricingStrategy.isSane(address(this))) return State.Preparing;
+    else if (!pricingStrategy.isSane()) return State.Preparing;
     else if (block.timestamp < startsAt) return State.PreFunding;
     else if (block.timestamp <= endsAt && !isCrowdsaleFull()) return State.Funding;
     else if (isMinimumGoalReached()) return State.Success;
@@ -619,7 +619,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
   }
 
   /** Interface marker. */
-  function isCrowdsale() public constant returns (bool) {
+  function isCrowdsale() public pure returns (bool) {
     return true;
   }
 
@@ -629,7 +629,7 @@ contract CrowdsaleExt is Allocatable, Haltable {
 
   /** Modified allowing execution only if the crowdsale is currently running.  */
   modifier inState(State state) {
-    if(getState() != state) throw;
+    if(getState() != state) revert();
     _;
   }
 
@@ -645,15 +645,12 @@ contract CrowdsaleExt is Allocatable, Haltable {
    * The child contract must define their own cap setting rules.
    * We allow a lot of flexibility through different capping strategies (ETH, token count)
    * Called from invest().
-   *
-   * @param weiAmount The amount of wei the investor tries to invest in the current transaction
-   * @param tokenAmount The amount of tokens we try to give to the investor in the current transaction
-   * @param weiRaisedTotal What would be our total raised balance after this transaction
+   *  
    * @param tokensSoldTotal What would be our total sold tokens count after this transaction
    *
    * @return true if taking this investment would break our cap rules
    */
-  function isBreakingCap(uint weiAmount, uint tokenAmount, uint weiRaisedTotal, uint tokensSoldTotal) public constant returns (bool limitBroken);
+  function isBreakingCap(uint tokensSoldTotal) public constant returns (bool limitBroken);
 
   function isBreakingInvestorCap(address receiver, uint tokenAmount) public constant returns (bool limitBroken);
 

@@ -37,7 +37,7 @@ contract TokenVesting is Allocatable, SafeMath {
 
     event VestedTokensReleased(address _adr, uint256 _amount);
     
-    function TokenVesting(address _tokenAddress) public {
+    constructor(address _tokenAddress) public {
         
         crowdSaleTokenAddress = _tokenAddress;
     }
@@ -163,6 +163,6 @@ contract TokenVesting is Allocatable, SafeMath {
         token.transfer(_adr, amountToRelease);
         // decrement overall unreleased token count
         totalUnreleasedTokens = safeSub(totalUnreleasedTokens, amountToRelease);
-        VestedTokensReleased(_adr, amountToRelease);
+        emit VestedTokensReleased(_adr, amountToRelease);
     }
 }

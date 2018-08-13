@@ -10,7 +10,6 @@ import "./StandardToken.sol";
 import "./UpgradeableToken.sol";
 import "./ReleasableToken.sol";
 import "./MintableTokenExt.sol";
-import "./BurnableToken.sol";
 
 
 /**
@@ -24,7 +23,7 @@ import "./BurnableToken.sol";
  * - The token can be capped (supply set in the constructor) or uncapped (crowdsale contract can mint new tokens)
  *
  */
-contract CrowdsaleTokenExt is ReleasableToken, MintableTokenExt, UpgradeableToken, BurnableToken {
+contract CrowdsaleTokenExt is ReleasableToken, MintableTokenExt, UpgradeableToken {
 
   /** Name and symbol were updated. */
   event UpdatedTokenInformation(string newName, string newSymbol);
@@ -51,7 +50,7 @@ contract CrowdsaleTokenExt is ReleasableToken, MintableTokenExt, UpgradeableToke
    * @param _decimals Number of decimal places
    * @param _mintable Are new tokens created over the crowdsale or do we distribute only the initial supply? Note that when the token becomes transferable the minting always ends.
    */
-  function CrowdsaleTokenExt(string _name, string _symbol, uint _initialSupply, uint _decimals, bool _mintable, uint _globalMinCap)
+  constructor(string _name, string _symbol, uint _initialSupply, uint _decimals, bool _mintable, uint _globalMinCap) public
     UpgradeableToken(msg.sender) {
 
     // Create any address, can be transferred
@@ -72,14 +71,14 @@ contract CrowdsaleTokenExt is ReleasableToken, MintableTokenExt, UpgradeableToke
     balances[owner] = totalSupply;
 
     if(totalSupply > 0) {
-      Minted(owner, totalSupply);
+     emit Minted(owner, totalSupply);
     }
 
     // No more new supply allowed after the token creation
     if(!_mintable) {
       mintingFinished = true;
       if(totalSupply == 0) {
-        throw; // Cannot create a token without supply and no minting
+        revert(); // Cannot create a token without supply and no minting
       }
     }
   }
@@ -108,11 +107,11 @@ contract CrowdsaleTokenExt is ReleasableToken, MintableTokenExt, UpgradeableToke
    * This function allows the token owner to rename the token after the operations
    * have been completed and then point the audience to use the token contract.
    */
-  function setTokenInformation(string _name, string _symbol) onlyOwner {
+  function setTokenInformation(string _name, string _symbol) public onlyOwner {
     name = _name;
     symbol = _symbol;
 
-    UpdatedTokenInformation(name, symbol);
+    emit UpdatedTokenInformation(name, symbol);
   }
 
   /**
@@ -127,7 +126,7 @@ contract CrowdsaleTokenExt is ReleasableToken, MintableTokenExt, UpgradeableToke
     uint balance = token.balanceOf(this);
     token.transfer(owner, balance);
 
-    ClaimedTokens(_token, owner, balance);
+    emit ClaimedTokens(_token, owner, balance);
   }
 
 }

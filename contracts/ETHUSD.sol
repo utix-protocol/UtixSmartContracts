@@ -24,7 +24,7 @@ contract ETHUSD is usingOraclize, Ownable {
     event LogUpdate(address indexed _owner, uint indexed _balance);
 
     // Constructor
-    function ETHUSD(uint _ethInCents)
+    constructor (uint _ethInCents)
     payable
     public {
                
@@ -52,7 +52,7 @@ contract ETHUSD is usingOraclize, Ownable {
         update();
     }
 
-    function getBalance() public returns (uint _balance) {
+    function getBalance() public view returns (uint _balance) {
         return address(this).balance;
     }
 
@@ -66,7 +66,7 @@ contract ETHUSD is usingOraclize, Ownable {
             emit LogInfo("Oraclize query was sent, standing by for the answer..");
 
             // Using XPath to to fetch the right element in the JSON response
-            oraclize_query(3600,"URL", "json(https://api.coinbase.com/v2/prices/ETH-USD/spot).data.amount");
+            oraclize_query(60,"URL", "json(https://api.coinbase.com/v2/prices/ETH-USD/spot).data.amount");
         }
     }
 
@@ -88,8 +88,8 @@ contract ETHUSD is usingOraclize, Ownable {
     public
     onlyOwner
     {
-        if (msg.sender != owner) throw;
-        _addr.send(this.balance);
+        if (msg.sender != owner) revert();
+        _addr.transfer(address(this).balance);
     } 
-   
+
 }

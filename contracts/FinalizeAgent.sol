@@ -17,7 +17,7 @@ contract FinalizeAgent {
 
   bool public reservedTokensAreDistributed = false;
 
-  function isFinalizeAgent() public constant returns(bool) {
+  function isFinalizeAgent() public pure returns(bool) {
     return true;
   }
 
@@ -28,9 +28,9 @@ contract FinalizeAgent {
    */
   function isSane() public constant returns (bool);
 
-  function distributeReservedTokens(uint reservedTokensDistributionBatch);
+  function distributeReservedTokens(uint reservedTokensDistributionBatch) public;
 
   /** Called once by crowdsale finalize() if the sale was success. */
-  function finalizeCrowdsale();
+  function finalizeCrowdsale() public;
 
 }
