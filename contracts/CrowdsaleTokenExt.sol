@@ -11,7 +11,6 @@ import "./UpgradeableToken.sol";
 import "./ReleasableToken.sol";
 import "./MintableTokenExt.sol";
 
-
 /**
  * A crowdsaled token.
  *
