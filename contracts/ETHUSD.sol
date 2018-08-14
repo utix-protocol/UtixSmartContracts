@@ -1,4 +1,4 @@
-pragma solidity ^0.4.21;
+pragma solidity >=0.4.21;
 
 import "./usingOraclize.sol";
 import "./Ownable.sol";
@@ -50,6 +50,7 @@ contract ETHUSD is usingOraclize, Ownable {
         ethInCents = parseInt(result, 2);
         emit LogPriceUpdate(ethInCents);
         update();
+        myid;proof;
     }
 
     function getBalance() public view returns (uint _balance) {
