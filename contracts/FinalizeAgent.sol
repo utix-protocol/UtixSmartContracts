@@ -4,7 +4,8 @@
  * Licensed under the Apache License, version 2.0: https://github.com/TokenMarketNet/ico/blob/master/LICENSE.txt
  */
 
-pragma solidity ^0.4.21;
+pragma solidity 0.4.24;
+
 
 /**
  * Finalize agent defines what happens at the end of succeseful crowdsale.
@@ -15,22 +16,22 @@ pragma solidity ^0.4.21;
  */
 contract FinalizeAgent {
 
-  bool public reservedTokensAreDistributed = false;
+    bool public reservedTokensAreDistributed = false;
 
-  function isFinalizeAgent() public pure returns(bool) {
-    return true;
-  }
+    function isFinalizeAgent() public pure returns(bool) {
+        return true;
+    }
 
-  /** Return true if we can run finalizeCrowdsale() properly.
-   *
-   * This is a safety check function that doesn't allow crowdsale to begin
-   * unless the finalizer has been set up properly.
-   */
-  function isSane() public constant returns (bool);
+    /** Return true if we can run finalizeCrowdsale() properly.
+    *
+    * This is a safety check function that doesn't allow crowdsale to begin
+    * unless the finalizer has been set up properly.
+    */
+    function isSane() public view returns (bool);
 
-  function distributeReservedTokens(uint reservedTokensDistributionBatch) public;
+    function distributeReservedTokens(uint reservedTokensDistributionBatch) public;
 
-  /** Called once by crowdsale finalize() if the sale was success. */
-  function finalizeCrowdsale() public;
+    /** Called once by crowdsale finalize() if the sale was success. */
+    function finalizeCrowdsale() public;
 
 }

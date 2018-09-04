@@ -1,18 +1,20 @@
 require('dotenv').config();
+
+const Config = require("./config.js");
 const Web3 = require("web3");
 const web3 = new Web3();
 const WalletProvider = require("truffle-wallet-provider");
 const Wallet = require('ethereumjs-wallet');
 
-var rinkebyPrivateKey = new Buffer("543c60affeef2d32e14c4e30ae9ef0b5e020c4f1d63c1479446f3ba1f4a830d6", "hex")
+var rinkebyPrivateKey = new Buffer(Config.constants.PRIVATE_KEY, "hex")
 var rinkebyWallet = Wallet.fromPrivateKey(rinkebyPrivateKey);
-var rinkebyProvider = new WalletProvider(rinkebyWallet, "https://rinkeby.infura.io/KTmUZWPFvNmrGwgt9iCs");
+var rinkebyProvider = new WalletProvider(rinkebyWallet, Config.infura.rinkeby);
 
 module.exports = {
   networks: {    
     rinkeby: {
       provider: rinkebyProvider,
-      gas: 6700000,
+      gas: Config.constants.MAX_GAS,
       gasPrice: web3.toWei("80", "gwei"),
       network_id: "4",
     }

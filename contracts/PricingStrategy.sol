@@ -4,49 +4,50 @@
  * Licensed under the Apache License, version 2.0: https://github.com/TokenMarketNet/ico/blob/master/LICENSE.txt
  */
 
-pragma solidity ^0.4.21;
+pragma solidity 0.4.24;
+
 
 /**
  * Interface for defining crowdsale pricing.
  */
 contract PricingStrategy {
 
-  address public tier;
+    address public tier;
 
-  /** Interface declaration. */
-  function isPricingStrategy() public pure returns (bool) {
-    return true;
-  }
+    /** Interface declaration. */
+    function isPricingStrategy() public pure returns (bool) {
+        return true;
+    }
 
-  /** Self check if all references are correctly set.
-   *
-   * Checks that pricing strategy matches crowdsale parameters.
-   */
-  function isSane() public pure returns (bool) {
-    return true;
-  }
+    /** Self check if all references are correctly set.
+    *
+    * Checks that pricing strategy matches crowdsale parameters.
+    */
+    function isSane() public pure returns (bool) {
+        return true;
+    }
 
-  /**
-   * @dev Pricing tells if this is a presale purchase or not.  
-     @return False by default, true if a presale purchaser
-   */
-  function isPresalePurchase() public pure returns (bool) {
-    return false;
-  }
+    /**
+    * @dev Pricing tells if this is a presale purchase or not.  
+      @return False by default, true if a presale purchaser
+    */
+    function isPresalePurchase() public pure returns (bool) {
+        return false;
+    }
 
-  /* How many weis one token costs */
-  function updateRate(uint oneTokenInCents) public;
+    /* How many weis one token costs */
+    function updateRate(uint oneTokenInCents) public;
 
-  /**
-   * When somebody tries to buy tokens for X eth, calculate how many tokens they get.
-   *
-   *
-   * @param value - What is the value of the transaction send in as wei
-   * @param tokensSold - how much tokens have been sold this far
-   * @param decimals - how many decimal units the token has
-   * @return Amount of tokens the investor receives
-   */
-  function calculatePrice(uint value,  uint tokensSold,  uint decimals) public constant returns (uint tokenAmount);
+    /**
+    * When somebody tries to buy tokens for X eth, calculate how many tokens they get.
+    *
+    *
+    * @param value - What is the value of the transaction send in as wei
+    * @param tokensSold - how much tokens have been sold this far
+    * @param decimals - how many decimal units the token has
+    * @return Amount of tokens the investor receives
+    */
+    function calculatePrice(uint value, uint tokensSold, uint decimals) public view returns (uint tokenAmount);
 
-  function oneTokenInWei(uint tokensSold, uint decimals) public constant returns (uint);
+    function oneTokenInWei(uint tokensSold, uint decimals) public view returns (uint);
 }

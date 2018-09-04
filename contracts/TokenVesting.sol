@@ -1,13 +1,16 @@
-pragma solidity ^0.4.21;
+pragma solidity 0.4.24;
 
 import "./ERC20.sol";
-import "./SafeMath.sol";
+import "./SafeMathLibExt.sol";
 import "./Allocatable.sol";
+
 
 /**
  * Contract to enforce Token Vesting
  */
-contract TokenVesting is Allocatable, SafeMath {
+contract TokenVesting is Allocatable {
+
+    using SafeMathLibExt for uint;
 
     address public crowdSaleTokenAddress;
 
@@ -17,11 +20,11 @@ contract TokenVesting is Allocatable, SafeMath {
     uint256 public totalUnreleasedTokens;
 
     // default vesting parameters
-    uint256 startAt = 0;
-    uint256 cliff = 1;
-    uint256 duration = 4; 
-    uint256 step = 300; //15778463;  //2592000;
-    bool changeFreezed = false;
+    uint256 private startAt = 0;
+    uint256 private cliff = 1;
+    uint256 private duration = 4; 
+    uint256 private step = 300; //15778463;  //2592000;
+    bool private changeFreezed = false;
 
     struct VestingSchedule {
         uint256 startAt;
@@ -42,13 +45,11 @@ contract TokenVesting is Allocatable, SafeMath {
         crowdSaleTokenAddress = _tokenAddress;
     }
 
-
     /** Modifier to check if changes to vesting is freezed  */
-    modifier changesToVestingFreezed(address _adr){
+    modifier changesToVestingFreezed(address _adr) {
         require(vestingMap[_adr].changeFreezed);
         _;
     }
-
 
     /** Modifier to check if changes to vesting is not freezed yet  */
     modifier changesToVestingNotFreezed(address adr) {
@@ -56,10 +57,10 @@ contract TokenVesting is Allocatable, SafeMath {
         _;
     }
 
-
     /** Function to set default vesting schedule parameters. */
-    function setDefaultVestingParameters(uint256 _startAt, uint256 _cliff, uint256 _duration, 
-        uint256 _step, bool _changeFreezed) onlyAllocateAgent public {
+    function setDefaultVestingParameters(
+        uint256 _startAt, uint256 _cliff, uint256 _duration,
+        uint256 _step, bool _changeFreezed) public onlyAllocateAgent {
 
         // data validation
         require(_step != 0);
@@ -76,16 +77,21 @@ contract TokenVesting is Allocatable, SafeMath {
 
     /** Function to set vesting with default schedule. */
     function setVestingWithDefaultSchedule(address _adr, uint256 _amount) 
-        public 
-        changesToVestingNotFreezed(_adr) onlyAllocateAgent {
+    public 
+    changesToVestingNotFreezed(_adr) onlyAllocateAgent {
        
         setVesting(_adr, startAt, cliff, duration, step, _amount, changeFreezed);
     }
 
     /** Function to set/update vesting schedule. PS - Amount cannot be changed once set */
-    function setVesting(address _adr, uint256 _startAt, uint256 _cliff, uint256 _duration, uint256 _step, uint256 _amount, bool _changeFreezed) 
-        public 
-        changesToVestingNotFreezed(_adr) onlyAllocateAgent {
+    function setVesting(
+        address _adr, 
+        uint256 _startAt, 
+        uint256 _cliff, 
+        uint256 _duration, 
+        uint256 _step, 
+        uint256 _amount, 
+        bool _changeFreezed) public changesToVestingNotFreezed(_adr) onlyAllocateAgent {
 
         VestingSchedule storage vestingSchedule = vestingMap[_adr];
 
@@ -108,8 +114,8 @@ contract TokenVesting is Allocatable, SafeMath {
         if (vestingSchedule.amount == 0) {
             // check if enough tokens are held by this contract
             ERC20 token = ERC20(crowdSaleTokenAddress);
-            require(token.balanceOf(this) >= safeAdd(totalUnreleasedTokens, _amount));
-            totalUnreleasedTokens = safeAdd(totalUnreleasedTokens, _amount);
+            require(token.balanceOf(this) >= totalUnreleasedTokens.plus(_amount));
+            totalUnreleasedTokens = totalUnreleasedTokens.plus(_amount);
             vestingSchedule.amount = _amount; 
         }
 
@@ -117,7 +123,7 @@ contract TokenVesting is Allocatable, SafeMath {
         vestingSchedule.changeFreezed = _changeFreezed;
     }
 
-    function isVestingSet(address adr) public constant returns (bool isSet) {
+    function isVestingSet(address adr) public view returns (bool isSet) {
         return vestingMap[adr].amount != 0;
     }
 
@@ -125,7 +131,6 @@ contract TokenVesting is Allocatable, SafeMath {
         require(isVestingSet(_adr)); // first check if vesting is set
         vestingMap[_adr].changeFreezed = true;
     }
-
 
     /** Release tokens as per vesting schedule, called by contributor  */
     function releaseMyVestedTokens() public changesToVestingFreezed(msg.sender) {
@@ -137,7 +142,7 @@ contract TokenVesting is Allocatable, SafeMath {
         VestingSchedule storage vestingSchedule = vestingMap[_adr];
         
         // check if all tokens are not vested
-        require(safeSub(vestingSchedule.amount, vestingSchedule.amountReleased) > 0);
+        require(vestingSchedule.amount.minus(vestingSchedule.amountReleased) > 0);
         
         // calculate total vested tokens till now
         uint256 totalTime = block.timestamp - vestingSchedule.startAt;
@@ -148,21 +153,21 @@ contract TokenVesting is Allocatable, SafeMath {
 
         uint256 tokensPerStep = vestingSchedule.amount / vestingSchedule.duration;
         // check if amount is divisble by duration
-        if(tokensPerStep * vestingSchedule.duration != vestingSchedule.amount) tokensPerStep++;
+        if (tokensPerStep * vestingSchedule.duration != vestingSchedule.amount) tokensPerStep++;
 
-        uint256 totalReleasableAmount = safeMul(tokensPerStep, totalSteps);
+        uint256 totalReleasableAmount = tokensPerStep.times(totalSteps);
 
         // handle the case if user has not claimed even after vesting period is over or amount was not divisible
-        if(totalReleasableAmount > vestingSchedule.amount) totalReleasableAmount = vestingSchedule.amount;
+        if (totalReleasableAmount > vestingSchedule.amount) totalReleasableAmount = vestingSchedule.amount;
 
-        uint256 amountToRelease = safeSub(totalReleasableAmount, vestingSchedule.amountReleased);
-        vestingSchedule.amountReleased = safeAdd(vestingSchedule.amountReleased, amountToRelease);
+        uint256 amountToRelease = totalReleasableAmount.minus(vestingSchedule.amountReleased);
+        vestingSchedule.amountReleased = vestingSchedule.amountReleased.plus(amountToRelease);
 
         // transfer vested tokens
         ERC20 token = ERC20(crowdSaleTokenAddress);
         token.transfer(_adr, amountToRelease);
         // decrement overall unreleased token count
-        totalUnreleasedTokens = safeSub(totalUnreleasedTokens, amountToRelease);
+        totalUnreleasedTokens = totalUnreleasedTokens.minus(amountToRelease);
         emit VestedTokensReleased(_adr, amountToRelease);
     }
 }

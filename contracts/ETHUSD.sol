@@ -1,7 +1,9 @@
-pragma solidity >=0.4.21;
+pragma solidity 0.4.24;
 
 import "./usingOraclize.sol";
 import "./Ownable.sol";
+
+
 /**
  * Contract which exposes `ethInCents` which is the Ether price in USD cents.
  * E.g. if 1 Ether is sold at 840.32 USD on the markets, the `ethInCents` will
@@ -25,8 +27,7 @@ contract ETHUSD is usingOraclize, Ownable {
 
     // Constructor
     constructor (uint _ethInCents)
-    payable
-    public {
+    public payable {
                
         ethInCents = _ethInCents;
 
@@ -40,7 +41,7 @@ contract ETHUSD is usingOraclize, Ownable {
     }
 
     // Fallback function
-    function() payable public{
+    function() public payable {
         
     }
 
@@ -50,7 +51,6 @@ contract ETHUSD is usingOraclize, Ownable {
         ethInCents = parseInt(result, 2);
         emit LogPriceUpdate(ethInCents);
         update();
-        myid;proof;
     }
 
     function getBalance() public view returns (uint _balance) {
@@ -58,8 +58,8 @@ contract ETHUSD is usingOraclize, Ownable {
     }
 
     function update()
-    payable
-    public {
+    public payable
+    {
         // Check if we have enough remaining funds
         if (oraclize_getPrice("URL") > address(this).balance) {
             emit LogInfo("Oraclize query was NOT sent, please add some ETH to cover for the query fee");
@@ -67,13 +67,13 @@ contract ETHUSD is usingOraclize, Ownable {
             emit LogInfo("Oraclize query was sent, standing by for the answer..");
 
             // Using XPath to to fetch the right element in the JSON response
-            oraclize_query(60,"URL", "json(https://api.coinbase.com/v2/prices/ETH-USD/spot).data.amount");
+            oraclize_query(60, "URL", "json(https://api.coinbase.com/v2/prices/ETH-USD/spot).data.amount");
         }
     }
 
     function instantUpdate()
-    payable
-    public onlyOwner {
+    public payable
+    onlyOwner {
         // Check if we have enough remaining funds
         if (oraclize_getPrice("URL") > address(this).balance) {
             emit LogInfo("Oraclize query was NOT sent, please add some ETH to cover for the query fee");

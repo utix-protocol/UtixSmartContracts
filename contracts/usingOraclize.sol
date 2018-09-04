@@ -30,22 +30,38 @@ THE SOFTWARE.
 
 // This api is currently targeted at 0.4.18, please import oraclizeAPI_pre0.4.sol or oraclizeAPI_0.4 where necessary
 
-pragma solidity >=0.4.21;// Incompatible compiler version... please select one stated within pragma solidity or use different oraclizeAPI version
+pragma solidity 0.4.24;
+
 
 contract OraclizeI {
     address public cbAddress;
     function query(uint _timestamp, string _datasource, string _arg) external payable returns (bytes32 _id);
-    function query_withGasLimit(uint _timestamp, string _datasource, string _arg, uint _gaslimit) external payable returns (bytes32 _id);
-    function query2(uint _timestamp, string _datasource, string _arg1, string _arg2) public payable returns (bytes32 _id);
-    function query2_withGasLimit(uint _timestamp, string _datasource, string _arg1, string _arg2, uint _gaslimit) external payable returns (bytes32 _id);
+
+    function query_withGasLimit(uint _timestamp, string _datasource, string _arg, uint _gaslimit) 
+        external payable returns (bytes32 _id);
+
+    function query2(uint _timestamp, string _datasource, string _arg1, string _arg2) 
+        public payable returns (bytes32 _id);
+
+    function query2_withGasLimit(uint _timestamp, string _datasource, string _arg1, string _arg2, uint _gaslimit) 
+        external payable returns (bytes32 _id);
+
     function queryN(uint _timestamp, string _datasource, bytes _argN) public payable returns (bytes32 _id);
-    function queryN_withGasLimit(uint _timestamp, string _datasource, bytes _argN, uint _gaslimit) external payable returns (bytes32 _id);
+
+    function queryN_withGasLimit(uint _timestamp, string _datasource, bytes _argN, uint _gaslimit) 
+        external payable returns (bytes32 _id);
+
     function getPrice(string _datasource) public returns (uint _dsprice);
+
     function getPrice(string _datasource, uint gaslimit) public returns (uint _dsprice);
+
     function setProofType(byte _proofType) external;
+
     function setCustomGasPrice(uint _gasPrice) external;
-    function randomDS_getSessionPubKeyHash() external constant returns(bytes32);
+
+    function randomDS_getSessionPubKeyHash() external view returns(bytes32);
 }
+
 
 contract OraclizeAddrResolverI {
     function getAddress() public returns (address _addr);
@@ -87,7 +103,7 @@ library Buffer {
 
     function init(buffer memory buf, uint _capacity) internal pure {
         uint capacity = _capacity;
-        if(capacity % 32 != 0) capacity += 32 - (capacity % 32);
+        if (capacity % 32 != 0) capacity += 32 - (capacity % 32);
         // Allocate space for the buffer data
         buf.capacity = capacity;
         assembly {
@@ -105,7 +121,7 @@ library Buffer {
     }
 
     function max(uint a, uint b) private pure returns(uint) {
-        if(a > b) {
+        if (a > b) {
             return a;
         }
         return b;
@@ -119,7 +135,7 @@ library Buffer {
      * @return The original buffer.
      */
     function append(buffer memory buf, bytes data) internal pure returns(buffer memory) {
-        if(data.length + buf.buf.length > buf.capacity) {
+        if (data.length + buf.buf.length > buf.capacity) {
             resize(buf, max(buf.capacity, data.length) * 2);
         }
 
@@ -166,7 +182,7 @@ library Buffer {
      * @return The original buffer.
      */
     function append(buffer memory buf, uint8 data) internal pure {
-        if(buf.buf.length + 1 > buf.capacity) {
+        if (buf.buf.length + 1 > buf.capacity) {
             resize(buf, buf.capacity * 2);
         }
 
@@ -191,7 +207,7 @@ library Buffer {
      * @return The original buffer.
      */
     function appendInt(buffer memory buf, uint data, uint len) internal pure returns(buffer memory) {
-        if(len + buf.buf.length > buf.capacity) {
+        if (len + buf.buf.length > buf.capacity) {
             resize(buf, max(buf.capacity, len) * 2);
         }
 
@@ -223,18 +239,18 @@ library CBOR {
     uint8 private constant MAJOR_TYPE_CONTENT_FREE = 7;
 
     function encodeType(Buffer.buffer memory buf, uint8 major, uint value) private pure {
-        if(value <= 23) {
+        if (value <= 23) {
             buf.append(uint8((major << 5) | value));
-        } else if(value <= 0xFF) {
+        } else if (value <= 0xFF) {
             buf.append(uint8((major << 5) | 24));
             buf.appendInt(value, 1);
-        } else if(value <= 0xFFFF) {
+        } else if (value <= 0xFFFF) {
             buf.append(uint8((major << 5) | 25));
             buf.appendInt(value, 2);
-        } else if(value <= 0xFFFFFFFF) {
+        } else if (value <= 0xFFFFFFFF) {
             buf.append(uint8((major << 5) | 26));
             buf.appendInt(value, 4);
-        } else if(value <= 0xFFFFFFFFFFFFFFFF) {
+        } else if (value <= 0xFFFFFFFFFFFFFFFF) {
             buf.append(uint8((major << 5) | 27));
             buf.appendInt(value, 8);
         }
@@ -249,7 +265,7 @@ library CBOR {
     }
 
     function encodeInt(Buffer.buffer memory buf, int value) internal pure {
-        if(value >= 0) {
+        if (value >= 0) {
             encodeType(buf, MAJOR_TYPE_INT, uint(value));
         } else {
             encodeType(buf, MAJOR_TYPE_NEGATIVE_INT, uint(-1 - value));
@@ -303,10 +319,10 @@ contract usingOraclize {
 
     OraclizeI oraclize;
     modifier oraclizeAPI {
-        if((address(OAR)==0)||(getCodeSize(address(OAR))==0))
+        if ((address(OAR) == 0)||(getCodeSize(address(OAR)) == 0))
             oraclize_setNetwork(networkID_auto);
 
-        if(address(oraclize) != OAR.getAddress())
+        if (address(oraclize) != OAR.getAddress())
             oraclize = OraclizeI(OAR.getAddress());
 
         _;
@@ -317,8 +333,8 @@ contract usingOraclize {
     }
 
     function oraclize_setNetwork(uint8 networkID) internal returns(bool){
-      return oraclize_setNetwork();
-      networkID; // silence the warning and remain backwards compatible
+        return oraclize_setNetwork();
+        networkID; // silence the warning and remain backwards compatible
     }
     function oraclize_setNetwork() internal returns(bool){
         if (getCodeSize(0x1d3B2638a7cC9f2CB3D298A3DA7a90B67E5506ed)>0){ //mainnet
@@ -360,8 +376,8 @@ contract usingOraclize {
         __callback(myid, result, new bytes(0));
     }
     function __callback(bytes32 myid, string result, bytes proof) public {
-      return;
-      myid; result; proof; // Silence compiler warnings
+        return;
+        myid; result; proof; // Silence compiler warnings
     }
 
     function oraclize_getPrice(string datasource) oraclizeAPI internal returns (uint){
@@ -770,17 +786,17 @@ contract usingOraclize {
         uint160 iaddr = 0;
         uint160 b1;
         uint160 b2;
-        for (uint i=2; i<2+2*20; i+=2){
+        for (uint i = 2; i < 2 + 2 * 20; i += 2){
             iaddr *= 256;
             b1 = uint160(tmp[i]);
             b2 = uint160(tmp[i+1]);
-            if ((b1 >= 97)&&(b1 <= 102)) b1 -= 87;
-            else if ((b1 >= 65)&&(b1 <= 70)) b1 -= 55;
-            else if ((b1 >= 48)&&(b1 <= 57)) b1 -= 48;
-            if ((b2 >= 97)&&(b2 <= 102)) b2 -= 87;
-            else if ((b2 >= 65)&&(b2 <= 70)) b2 -= 55;
-            else if ((b2 >= 48)&&(b2 <= 57)) b2 -= 48;
-            iaddr += (b1*16+b2);
+            if ((b1 >= 97) && (b1 <= 102)) b1 -= 87;
+            else if ((b1 >= 65) && (b1 <= 70)) b1 -= 55;
+            else if ((b1 >= 48) && (b1 <= 57)) b1 -= 48;
+            if ((b2 >= 97) && (b2 <= 102)) b2 -= 87;
+            else if ((b2 >= 65) && (b2 <= 70)) b2 -= 55;
+            else if ((b2 >= 48) && (b2 <= 57)) b2 -= 48;
+            iaddr += (b1 * 16 + b2);
         }
         return address(iaddr);
     }
@@ -806,9 +822,9 @@ contract usingOraclize {
     function indexOf(string _haystack, string _needle) internal pure returns (int) {
         bytes memory h = bytes(_haystack);
         bytes memory n = bytes(_needle);
-        if(h.length < 1 || n.length < 1 || (n.length > h.length))
+        if (h.length < 1 || n.length < 1 || (n.length > h.length))
             return -1;
-        else if(h.length > (2**128 -1))
+        else if (h.length > (2**128 -1))
             return -1;
         else
         {
@@ -822,7 +838,7 @@ contract usingOraclize {
                     {
                         subindex++;
                     }
-                    if(subindex == n.length)
+                    if (subindex == n.length)
                         return int(i);
                 }
             }
@@ -872,7 +888,7 @@ contract usingOraclize {
         for (uint i=0; i<bresult.length; i++){
             if ((bresult[i] >= 48)&&(bresult[i] <= 57)){
                 if (decimals){
-                   if (_b == 0) break;
+                    if (_b == 0) break;
                     else _b--;
                 }
                 mint *= 10;
@@ -1077,7 +1093,7 @@ contract usingOraclize {
 
         require(prefix.length == n_random_bytes);
 
-        for (uint256 i=0; i< n_random_bytes; i++) {
+        for (uint256 i = 0; i < n_random_bytes; i++) {
             if (content[i] != prefix[i]) match_ = false;
         }
 
@@ -1089,8 +1105,8 @@ contract usingOraclize {
         // Step 2: the unique keyhash has to match with the sha256 of (context name + queryId)
         uint ledgerProofLength = 3+65+(uint(proof[3+65+1])+2)+32;
         bytes memory keyhash = new bytes(32);
-        copyBytes(proof, ledgerProofLength, 32, keyhash, 0);
-        if (!(keccak256(keyhash) == keccak256(abi.encodePacked(context_name, queryId)))) return false;
+        copyBytes(proof, ledgerProofLength, 32, keyhash, 0);        
+        if (!(keccak256(keyhash) == keccak256(sha256(context_name, queryId)))) return false;
 
         bytes memory sig1 = new bytes(uint(proof[ledgerProofLength+(32+8+1+32)+1])+2);
         copyBytes(proof, ledgerProofLength+(32+8+1+32), sig1.length, sig1, 0);
@@ -1098,7 +1114,8 @@ contract usingOraclize {
         // Step 3: we assume sig1 is valid (it will be verified during step 5) and we verify if 'result' is the prefix of sha256(sig1)
         if (!matchBytes32Prefix(sha256(sig1), result, uint(proof[ledgerProofLength+32+8]))) return false;
 
-        // Step 4: commitment match verification, keccak256(delay, nbytes, unonce, sessionKeyHash) == commitment in storage.
+        // Step 4: commitment match verification, 
+        // keccak256(delay, nbytes, unonce, sessionKeyHash) == commitment in storage.
         // This is to verify that the computed args match with the ones specified in the query.
         bytes memory commitmentSlice1 = new bytes(8+1+32);
         copyBytes(proof, ledgerProofLength+32, 8+1+32, commitmentSlice1, 0);
@@ -1108,9 +1125,12 @@ contract usingOraclize {
         copyBytes(proof, sig2offset-64, 64, sessionPubkey, 0);
 
         bytes32 sessionPubkeyHash = sha256(sessionPubkey);
-        if (oraclize_randomDS_args[queryId] == keccak256(abi.encodePacked(commitmentSlice1, sessionPubkeyHash))){ //unonce, nbytes and sessionKeyHash match
+        if (oraclize_randomDS_args[queryId] == keccak256(abi.encodePacked(commitmentSlice1, sessionPubkeyHash))) { 
+            //unonce, nbytes and sessionKeyHash match
             delete oraclize_randomDS_args[queryId];
-        } else return false;
+        } 
+        else 
+            return false;
 
 
         // Step 5: validity verification for sig1 (keyhash and args signed with the sessionKey)
@@ -1119,7 +1139,7 @@ contract usingOraclize {
         if (!verifySig(sha256(tosign1), sig1, sessionPubkey)) return false;
 
         // verify if sessionPubkeyHash was verified already, if not.. let's do it!
-        if (oraclize_randomDS_sessionKeysHashVerified[sessionPubkeyHash] == false){
+        if (oraclize_randomDS_sessionKeysHashVerified[sessionPubkeyHash] == false) {
             oraclize_randomDS_sessionKeysHashVerified[sessionPubkeyHash] = oraclize_randomDS_proofVerify__sessionKeyValidity(proof, sig2offset);
         }
 
@@ -1127,7 +1147,8 @@ contract usingOraclize {
     }
 
     // the following function has been written by Alex Beregszaszi (@axic), use it under the terms of the MIT license
-    function copyBytes(bytes from, uint fromOffset, uint length, bytes to, uint toOffset) internal pure returns (bytes) {
+    function copyBytes(bytes from, uint fromOffset, uint length, bytes to, uint toOffset) 
+    internal pure returns (bytes) {
         uint minLength = length + toOffset;
 
         // Buffer too small
@@ -1185,7 +1206,7 @@ contract usingOraclize {
         uint8 v;
 
         if (sig.length != 65)
-          return (false, 0);
+            return (false, 0);
 
         // The signature format is a compact form of:
         //   {bytes32 r}{bytes32 s}{uint8 v}
@@ -1211,7 +1232,7 @@ contract usingOraclize {
         // geth uses [0, 1] and some clients have followed. This might change, see:
         //  https://github.com/ethereum/go-ethereum/issues/2053
         if (v < 27)
-          v += 27;
+            v += 27;
 
         if (v != 27 && v != 28)
             return (false, 0);
