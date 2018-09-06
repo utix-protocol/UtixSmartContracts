@@ -48,6 +48,11 @@ contract FlatPricingExt is PricingStrategy, Ownable {
         tier = _tier;
     }
 
+    function setEthUSD(address _ethUSDAddress) public onlyOwner {
+        assert(_ethUSDAddress != address(0));
+        ethUsdObj = ETHUSD(_ethUSDAddress);
+    }
+
     function updateRate(uint _oneTokenInCents) public onlyTier {
       
         require(_oneTokenInCents > 0);  

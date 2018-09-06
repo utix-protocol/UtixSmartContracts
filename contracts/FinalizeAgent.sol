@@ -33,5 +33,9 @@ contract FinalizeAgent {
 
     /** Called once by crowdsale finalize() if the sale was success. */
     function finalizeCrowdsale() public;
-
+    
+    /**
+    * Allow to (re)set Token.
+    */
+    function setCrowdsaleTokenExtv1(address _token) public;
 }

@@ -26,6 +26,14 @@ contract ReservedTokensFinalizeAgent is FinalizeAgent {
     function isSane() public view returns (bool) {
         return (token.releaseAgent() == address(this));
     }
+    
+    /**
+    * Allow to (re)set Token.
+    */
+    function setCrowdsaleTokenExtv1(address _token) public {
+        assert(msg.sender == address(crowdsale));
+        token = CrowdsaleTokenExt(_token);
+    }
 
     //distributes reserved tokens. Should be called before finalization
     function distributeReservedTokens(uint reservedTokensDistributionBatch) public {

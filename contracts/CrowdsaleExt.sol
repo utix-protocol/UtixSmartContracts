@@ -586,6 +586,19 @@ contract CrowdsaleExt is Allocatable, Haltable {
     }
 
     /**
+    * Allow to (re)set Token.
+    * @param _token upgraded token address
+    */
+    function setCrowdsaleTokenExtv1(address _token) public onlyOwner {
+        assert(_token != address(0));
+        token = FractionalERC20Ext(_token);
+        
+        if (address(finalizeAgent) != address(0)) {
+            finalizeAgent.setCrowdsaleTokenExtv1(_token);
+        }
+    }
+
+    /**
     * Allow to change the team multisig address in the case of emergency.
     *
     * This allows to save a deployed crowdsale wallet in the case the crowdsale has not yet begun
@@ -661,14 +674,14 @@ contract CrowdsaleExt is Allocatable, Haltable {
     *
     * @return true if taking this investment would break our cap rules
     */
-    function isBreakingCap(uint tokensSoldTotal) public constant returns (bool limitBroken);
+    function isBreakingCap(uint tokensSoldTotal) public view returns (bool limitBroken);
 
-    function isBreakingInvestorCap(address receiver, uint tokenAmount) public constant returns (bool limitBroken);
+    function isBreakingInvestorCap(address receiver, uint tokenAmount) public view returns (bool limitBroken);
 
     /**
     * Check if the current crowdsale is full and we can no longer sell any tokens.
     */
-    function isCrowdsaleFull() public constant returns (bool);
+    function isCrowdsaleFull() public view returns (bool);
 
     /**
     * Create new tokens or transfer issued tokens to the investor depending on the cap model.

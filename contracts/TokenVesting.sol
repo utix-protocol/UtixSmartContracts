@@ -81,17 +81,18 @@ contract TokenVesting is Allocatable {
     changesToVestingNotFreezed(_adr) onlyAllocateAgent {
        
         setVesting(_adr, startAt, cliff, duration, step, _amount, changeFreezed);
-    }
+    }    
 
     /** Function to set/update vesting schedule. PS - Amount cannot be changed once set */
     function setVesting(
-        address _adr, 
-        uint256 _startAt, 
-        uint256 _cliff, 
-        uint256 _duration, 
-        uint256 _step, 
-        uint256 _amount, 
-        bool _changeFreezed) public changesToVestingNotFreezed(_adr) onlyAllocateAgent {
+        address _adr,
+        uint256 _startAt,
+        uint256 _cliff,
+        uint256 _duration,
+        uint256 _step,
+        uint256 _amount,
+        bool _changeFreezed) 
+    public changesToVestingNotFreezed(_adr) onlyAllocateAgent {
 
         VestingSchedule storage vestingSchedule = vestingMap[_adr];
 
@@ -169,5 +170,12 @@ contract TokenVesting is Allocatable {
         // decrement overall unreleased token count
         totalUnreleasedTokens = totalUnreleasedTokens.minus(amountToRelease);
         emit VestedTokensReleased(_adr, amountToRelease);
+    }
+
+    /**
+    * Allow to (re)set Token.
+    */
+    function setCrowdsaleTokenExtv1(address _token) public onlyAllocateAgent {       
+        crowdSaleTokenAddress = _token;
     }
 }
