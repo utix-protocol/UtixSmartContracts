@@ -7,7 +7,7 @@ const token = {
   "supply": 0,
   "isMintable": true,
   "globalmincap": 0,
-  "oldtokenaddress": "0x1d9eb54364a449182f2e340cdbf658a56f682892",
+  "oldtokenaddress": "0xf290bbd220864711c5bc5153265d64a3d6d864c7",
   "originalSupply":utils.toFixed(30000 * 10 ** 18),
 };
 
