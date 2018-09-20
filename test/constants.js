@@ -12,30 +12,74 @@ const token = {
 };
 
 const reservedTokens = {
-  number: utils.toFixed(70000000 * 10**token.decimals),
+  number: utils.toFixed(5000000 * 10**token.decimals),
   percentageUnit: 0,
   percentageDecimals: 0,
-  isReserved: true
+  isReserved: true,
+  IsVested: true
+};
+
+const reservedTokens1 = {
+  number: utils.toFixed(4000000 * 10**token.decimals),
+  percentageUnit: 0,
+  percentageDecimals: 0,
+  isReserved: true,
+  IsVested: true
 };
 
 const reservedTokens2 = {
-  number: utils.toFixed(200 * 10**token.decimals),
+  number: utils.toFixed(1050000 * 10**token.decimals),
   percentageUnit: 0,
   percentageDecimals: 0,
-  isReserved: true
+  isReserved: true,
+  IsVested: false
 };
 
 const reservedTokens3 = {
-  number: utils.toFixed(350 * 10**token.decimals),
+  number: utils.toFixed(2200000 * 10**token.decimals),
   percentageUnit: 0,
   percentageDecimals: 0,
-  isReserved: true
+  isReserved: true,
+  IsVested: false
 };
 const reservedTokens4 = {
-  number: utils.toFixed(75 * 10**token.decimals),
+  number: utils.toFixed(700000 * 10**token.decimals),
   percentageUnit: 0,
   percentageDecimals: 0,
-  isReserved: true
+  isReserved: true,
+  IsVested: false
+};
+
+const reservedTokens5 = {
+  number: utils.toFixed(550000 * 10**token.decimals),
+  percentageUnit: 0,
+  percentageDecimals: 0,
+  isReserved: true,
+  IsVested: false
+};
+
+const reservedTokens6 = {
+  number: utils.toFixed(2500000 * 10**token.decimals),
+  percentageUnit: 0,
+  percentageDecimals: 0,
+  isReserved: true,
+  IsVested: false
+};
+
+const reservedTokens7 = {
+  number: utils.toFixed(2000000 * 10**token.decimals),
+  percentageUnit: 0,
+  percentageDecimals: 0,
+  isReserved: true,
+  IsVested: false
+};
+
+const reservedTokens8 = {
+  number: utils.toFixed(42000000 * 10**token.decimals),
+  percentageUnit: 0,
+  percentageDecimals: 0,
+  isReserved: true,
+  IsVested: false
 };
 
 const whiteListItem = {
@@ -111,9 +155,14 @@ const pricingStrategyMultiple = [{
 module.exports = {
   token,
   reservedTokens,
+  reservedTokens1,
   reservedTokens2,
   reservedTokens3,
   reservedTokens4,
+  reservedTokens5,
+  reservedTokens6,
+  reservedTokens7,
+  reservedTokens8,
   investments,
   investments2,
   whiteListItem,

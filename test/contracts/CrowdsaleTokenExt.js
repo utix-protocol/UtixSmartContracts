@@ -4,51 +4,44 @@ const ReservedTokensFinalizeAgent = artifacts.require("./ReservedTokensFinalizeA
 const ERROR_MSG = 'VM Exception while processing transaction: invalid opcode';
 
 const constants = require("../constants");
+const utils = require("../utils");
+
+require('chai')
+.use(require('chai-as-promised'))
+.use(require('chai-bignumber')(web3.BigNumber))
+.should();
 
 contract('CrowdsaleTokenExt', function(accounts) {
 
 	it('should reject setReservedTokensListMultiple another call', async () => {
 		let crowdsaleTokenExt = await CrowdsaleTokenExt.deployed();
 		await crowdsaleTokenExt.setReservedTokensListMultiple(
-			[accounts[2]], 
+			[accounts[3]], 
 	  		[constants.reservedTokens.number], 
 	  		[constants.reservedTokens.percentageUnit,], 
-	  		[constants.reservedTokens.percentageDecimals]
+			  [constants.reservedTokens.percentageDecimals],
+			  [true]
   		).should.be.rejectedWith(ERROR_MSG);
 	})
 
-	it("should get number of reserved tokens for investor", function() {
+	it("should get number of reserved tokens for investor : " + constants.reservedTokens.number, function() {
 		return CrowdsaleTokenExt.deployed().then(function(instance) {
-	    	return instance.getReservedTokens.call(accounts[2]);
+	    	return instance.getReservedTokens.call(accounts[3]);
 	    }).then(function(res) {
-	    	assert.equal(res, constants.reservedTokens.number, "`getReservedTokens` method returns absolute investor's reserved tokens");
+	    	assert.equal(utils.toFixed(res), constants.reservedTokens.number, "`getReservedTokens` method returns absolute investor's reserved tokens");
 	    });
 	});
 
-	it("should get number of reserved tokens for investor", function() {
+	
+	it("should get reserved tokens in percentage unit for investor : " + constants.reservedTokens.percentageUnit, function() {
 		return CrowdsaleTokenExt.deployed().then(function(instance) {
-	    	return instance.getReservedTokens.call(accounts[2]);
-	    }).then(function(res) {
-	    	assert.equal(res, constants.reservedTokens.number, "`getReservedTokens` method returns investor's reserved tokens.");
-	    });
-	});
-
-	it("should get reserved tokens in percentage unit for investor", function() {
-		return CrowdsaleTokenExt.deployed().then(function(instance) {
-	    	return instance.getReservedPercentageUnit.call(accounts[2]);
+	    	return instance.getReservedPercentageUnit.call(accounts[3]);
 	    }).then(function(res) {
 	    	assert.equal(res, constants.reservedTokens.percentageUnit, "`getReservedPercentageUnit` method returns investor's reserved tokens in percentage unit");
 	    });
 	});
 
-	it("should get percentage decimals for reserved tokens", function() {
-		return CrowdsaleTokenExt.deployed().then(function(instance) {
-	    	return instance.getReservedPercentageDecimals.call(accounts[2]);
-	    }).then(function(res) {
-	    	assert.equal(res, constants.reservedTokens.percentageDecimals, "`getReservedPercentageDecimals` method returns percentage decimals for investor's reserved tokens");
-	    });
-	});
-
+	
 	it("should get mint agent: crowdsale contract", function() {
 		return CrowdsaleTokenExt.deployed().then(function(instance) {
 	    	return instance.mintAgents.call(MintedTokenCappedCrowdsaleExt.address);
@@ -73,13 +66,6 @@ contract('CrowdsaleTokenExt', function(accounts) {
 	    });
 	});
 
-	it("should get owner", function() {
-		return CrowdsaleTokenExt.deployed().then(function(instance) {
-	    	return instance.owner.call();
-	    }).then(function(res) {
-	    	assert.equal(res, ReservedTokensFinalizeAgent.address, "ReservedTokensFinalizeAgent contract should be the owner of token contract");
-	    });
-	});
 
     it("should allow claiming tokens", function() {
 		const owner = accounts[0]

@@ -40,6 +40,7 @@ contract MintableTokenExt is StandardToken, Ownable {
         uint inPercentageDecimals;
         bool isReserved;
         bool isDistributed;
+        bool isVested;
     }
 
     mapping (address => ReservedTokensData) public reservedTokensList;
@@ -86,11 +87,16 @@ contract MintableTokenExt is StandardToken, Ownable {
         return reservedTokensList[addr].inPercentageDecimals;
     }
 
+    function getReservedIsVested(address addr) public view returns (bool isVested) {
+        return reservedTokensList[addr].isVested;
+    }
+
     function setReservedTokensListMultiple(
         address[] addrs, 
         uint[] inTokens, 
         uint[] inPercentageUnit, 
-        uint[] inPercentageDecimals
+        uint[] inPercentageDecimals,
+        bool[] isVested
         ) public canMint onlyOwner {
         assert(!reservedTokensDestinationsAreSet);
         assert(addrs.length == inTokens.length);
@@ -102,7 +108,9 @@ contract MintableTokenExt is StandardToken, Ownable {
                     addrs[iterator],
                     inTokens[iterator],
                     inPercentageUnit[iterator],
-                    inPercentageDecimals[iterator]);
+                    inPercentageDecimals[iterator],
+                    isVested[iterator]
+                    );
             }
         }
         reservedTokensDestinationsAreSet = true;
@@ -130,7 +138,7 @@ contract MintableTokenExt is StandardToken, Ownable {
         emit MintingAgentChanged(addr, state);
     }
 
-    function setReservedTokensList(address addr, uint inTokens, uint inPercentageUnit, uint inPercentageDecimals) 
+    function setReservedTokensList(address addr, uint inTokens, uint inPercentageUnit, uint inPercentageDecimals,bool isVested) 
     private canMint onlyOwner {
         assert(addr != address(0));
         if (!isAddressReserved(addr)) {
@@ -143,7 +151,8 @@ contract MintableTokenExt is StandardToken, Ownable {
             inPercentageUnit: inPercentageUnit,
             inPercentageDecimals: inPercentageDecimals,
             isReserved: true,
-            isDistributed: false
+            isDistributed: false,
+            isVested:isVested
         });
     }
 }

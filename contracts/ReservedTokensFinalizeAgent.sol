@@ -65,16 +65,25 @@ contract ReservedTokensFinalizeAgent is FinalizeAgent {
                 uint allocatedBonusInTokens = token.getReservedTokens(reservedAddr);
                 uint percentsOfTokensUnit = token.getReservedPercentageUnit(reservedAddr);
                 uint percentsOfTokensDecimals = token.getReservedPercentageDecimals(reservedAddr);
+                bool isVested = token.getReservedIsVested(reservedAddr);
 
                 if (percentsOfTokensUnit > 0) {
                     allocatedBonusInPercentage = tokensSold * percentsOfTokensUnit / 10**percentsOfTokensDecimals / 100;
-                    //token.mint(reservedAddr, allocatedBonusInPercentage);
-                    crowdsale.allocate(reservedAddr, allocatedBonusInPercentage, 0, allocatedBonusInPercentage);
+                    if(isVested) {                    
+                        crowdsale.allocate(reservedAddr, allocatedBonusInPercentage, 0, allocatedBonusInPercentage);
+                    }
+                    else {
+                        token.mint(reservedAddr, allocatedBonusInPercentage);
+                    }
                 }
 
                 if (allocatedBonusInTokens > 0) {
-                    //token.mint(reservedAddr, allocatedBonusInTokens);
-                    crowdsale.allocate(reservedAddr, allocatedBonusInTokens, 0, allocatedBonusInTokens);
+                    if(isVested) {                     
+                        crowdsale.allocate(reservedAddr, allocatedBonusInTokens, 0, allocatedBonusInTokens);
+                    }
+                    else {
+                        token.mint(reservedAddr, allocatedBonusInTokens);
+                    }
                 }
 
                 token.finalizeReservedAddress(reservedAddr);
